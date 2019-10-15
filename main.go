@@ -61,13 +61,25 @@ func child() {
 func cg() {
 	cgroups := "/sys/fs/cgroup"
 	pids := filepath.Join(cgroups, "pids")
-	err := os.Mkdir(filepath.Join(pids, "prakash"), 0755)
-	if err != nil && !os.IsExist(err) {
-		panic(err)
-	}
+	memory := filepath.Join(cgroups, "memory")
+	panicOnCreateDirError(os.Mkdir(filepath.Join(pids, "prakash"), 0755))
+	panicOnCreateDirError(os.Mkdir(filepath.Join(memory, "prakash"), 0755))
+
+
 	must(ioutil.WriteFile(filepath.Join(pids, "prakash/pids.max"), []byte("20"), 0700))
 	must(ioutil.WriteFile(filepath.Join(pids, "prakash/notify_on_release"), []byte("1"), 0700))
 	must(ioutil.WriteFile(filepath.Join(pids, "prakash/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
+
+	must(ioutil.WriteFile(filepath.Join(memory, "prakash/memory.limit_in_bytes"), []byte("41943040"), 0700))
+	must(ioutil.WriteFile(filepath.Join(memory, "prakash/notify_on_release"), []byte("1"), 0700))
+	must(ioutil.WriteFile(filepath.Join(memory, "prakash/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
+
+}
+
+func panicOnCreateDirError(err error) {
+	if err != nil && !os.IsExist(err) {
+		panic(err)
+	}
 }
 
 func must(err error)  {
